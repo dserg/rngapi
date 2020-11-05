@@ -62,17 +62,16 @@ class DBAL
 
         $dba->beginTransaction();
 
+        // delete expired tokens
+        $sth = $dba->prepare("DELETE FROM `auth_tokens` WHERE created_dt < DATE_SUB(NOW(), INTERVAL 1 MINUTE)");
+        $sth->execute();   
+
         // smells of in-line constants; interval should be in the config
-        $sth = $dba->prepare("SELECT COUNT(*) FROM auth_tokens WHERE token = :authToken AND created_dt < DATE_SUB(NOW(), INTERVAL 1 MINUTE)");
+        $sth = $dba->prepare("SELECT COUNT(*) FROM auth_tokens WHERE token = :authToken AND created_dt >= DATE_SUB(NOW(), INTERVAL 1 MINUTE)");
         $sth->bindParam(':authToken', $authToken, PDO::PARAM_STR);
         $sth->execute();
         // the result is in row 1, column 1
         $count = $sth->fetchColumn();
-
-        // delete parent
-        $sth = $dba->prepare("DELETE FROM `auth_tokens` WHERE created_dt < DATE_SUB(NOW(), INTERVAL 1 MINUTE)");
-        $sth->bindParam(':authToken', $authToken, PDO::PARAM_STR);
-        $sth->execute();        
 
         $dba->commit();
 

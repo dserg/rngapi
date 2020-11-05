@@ -56,7 +56,7 @@ class Handler
     {
         $authToken = AuthHeadersProcessor::validateAuthToken();
         
-        $bytes = random_bytes(32);
+        $bytes = random_bytes(16);
         $gid = bin2hex($bytes);
         $number = rand(1, 100000);
         $data = [
