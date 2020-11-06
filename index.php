@@ -1,20 +1,11 @@
 <?php
 
-include "app/DBAL.php";
-include "app/Helper.php";
-include "app/Handler.php";
-include "app/AuthHeadersProcessor.php";
-include "app/ExceptionsHandler.php";
+namespace RngAPI;
 
-
+include "src/RngAPI/DBAL.php";
+include "src/RngAPI/Helper.php";
+include "src/RngAPI/Handler.php";
+include "src/RngAPI/AuthHeadersProcessor.php";
+include "src/RngAPI/ExceptionsHandler.php";
 
 Handler::route();
-
-
-// exceptions
-// exceptions handler
-
-// type hinting
-// tests
-
-// composer file

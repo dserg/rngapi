@@ -1,19 +1,20 @@
 <?php
+namespace RngAPI;
 class Handler
 {
     /**
      * Basic router for the app
      */
-    public function route() 
+    public function route()
     {
         $parts = Helper::getPathParts();      
         try {
             if (count($parts) > 3) {
-                throw new Exception('Too many path parts.');
+                throw new \Exception('Too many path parts.');
             }
             // handle bad path requests
             if ($parts[1] != 'api') {
-                throw new Exception('Not an "api" call.');
+                throw new \Exception('Not an "api" call.');
             }
             // routing
             switch ($parts[2]) {
@@ -27,10 +28,10 @@ class Handler
                     self::handleRetrieve();
                     break;
                 default:
-                    throw new Exception('Bad method.');
+                    throw new \Exception('Bad method.');
                     break;
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             ExceptionsHandler::statusCodeHandle(404);
         }
     }
@@ -84,7 +85,14 @@ class Handler
         $fields = ['gid'];
         $data = Helper::sanitize($_GET, $fields);
 
-        $number = DBAL::readNumber($data);
+        try {
+            $number = DBAL::readNumber($data);
+            if (! $number) {
+                throw new \Exception('This GID does not exist.');
+            }
+        } catch (\Exception $e) {
+            ExceptionsHandler::basicHandle($e->getMessage());
+        }
         $result = [
             'value' => $number,
         ];

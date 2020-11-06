@@ -1,14 +1,15 @@
 <?php
+namespace RngAPI;
 class ExceptionsHandler 
 {
-	function basicHandle($message) {
+	function basicHandle(string $message) {
 		Helper::respond([
 			"error" => $message
 		]);
 		exit();
 	}
 
-	function statusCodeHandle($code) {
+	function statusCodeHandle(int $code) {
 		http_response_code($code);
 		exit();
 	}

@@ -1,4 +1,5 @@
 <?php
+namespace RngAPI;
 class DBAL 
 {
     /**
@@ -9,7 +10,7 @@ class DBAL
     /**
      * DBA singleton wrapper over PDO
      */
-    public static function getDBA() 
+    public static function getDBA(): \PDO 
     {
         // instantiate if doesn't exist
         if (is_null(DBAL::$dba)) {
@@ -22,11 +23,11 @@ class DBAL
                     'user' => 'root',
                     'password' => 'password'
                 ];
-                $pdo = new PDO($params['dsn'], $params['user'], $params['password'], [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+                $pdo = new \PDO($params['dsn'], $params['user'], $params['password'], [
+                    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
                 ]);
                 DBAL::$dba = $pdo;
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 ExceptionsHandler::basicHandle('Could not connect to the database');
             }
         }
@@ -36,7 +37,7 @@ class DBAL
     /**
      * Auth token write
      */
-    public function writeAuthToken($data) {
+    public function writeAuthToken(array $data) {
         $authToken = $data['authToken'];
         $dba = self::getDBA();
 
@@ -44,11 +45,11 @@ class DBAL
 
         // remove the token to clear TTL
         $sth = $dba->prepare("DELETE FROM auth_tokens WHERE token = :authToken");
-        $sth->bindParam(':authToken', $authToken, PDO::PARAM_STR);
+        $sth->bindParam(':authToken', $authToken, \PDO::PARAM_STR);
         $sth->execute();
         // insert new token
         $sth = $dba->prepare("INSERT INTO auth_tokens (`token`) VALUES (:authToken)");
-        $sth->bindParam(':authToken', $authToken, PDO::PARAM_STR);
+        $sth->bindParam(':authToken', $authToken, \PDO::PARAM_STR);
         $sth->execute();
 
         $dba->commit();
@@ -57,7 +58,7 @@ class DBAL
     /**
      * Check if the auth token exists and is valid
      */
-    public function checkAuthToken($authToken) {
+    public function checkAuthToken(string $authToken): ?string {
         $dba = self::getDBA();
 
         $dba->beginTransaction();
@@ -68,7 +69,7 @@ class DBAL
 
         // smells of in-line constants; interval should be in the config
         $sth = $dba->prepare("SELECT COUNT(*) FROM auth_tokens WHERE token = :authToken AND created_dt >= DATE_SUB(NOW(), INTERVAL 1 MINUTE)");
-        $sth->bindParam(':authToken', $authToken, PDO::PARAM_STR);
+        $sth->bindParam(':authToken', $authToken, \PDO::PARAM_STR);
         $sth->execute();
         // the result is in row 1, column 1
         $count = $sth->fetchColumn();
@@ -86,23 +87,23 @@ class DBAL
     /**
      * RNG number write
      */
-    public function writeNumber($data) {
+    public function writeNumber(array $data) {
         $dba = self::getDBA();
 
         $sth = $dba->prepare("INSERT INTO `numbers` VALUES (:authToken, :gid, :number)");
-        $sth->bindParam(':authToken', $data['authToken'], PDO::PARAM_STR);
-        $sth->bindParam(':gid', $data['gid'], PDO::PARAM_STR);
-        $sth->bindParam(':number', $data['number'], PDO::PARAM_INT);
+        $sth->bindParam(':authToken', $data['authToken'], \PDO::PARAM_STR);
+        $sth->bindParam(':gid', $data['gid'], \PDO::PARAM_STR);
+        $sth->bindParam(':number', $data['number'], \PDO::PARAM_INT);
         $sth->execute();
     }
 
     /**
      * RNG number read (by generation ID)
      */
-    public function readNumber($data) {
+    public function readNumber(array $data): int {
         $dba = self::getDBA();
         $sth = $dba->prepare("SELECT `number` FROM `numbers` WHERE `generation_id` = :gid");
-        $sth->bindParam(':gid', $data['gid'], PDO::PARAM_STR);
+        $sth->bindParam(':gid', $data['gid'], \PDO::PARAM_STR);
         $sth->execute();
         // the result is in row 1, column 1
         $result = $sth->fetchColumn();
